@@ -1,26 +1,477 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* MidJourney Dark Theme - Primary Colors */
+    --background: 210 11% 10%;        /* #1a1a1a - main background */
+    --foreground: 210 10% 98%;        /* #fafafa - primary text */
+    --card: 210 11% 15%;              /* #262626 - card backgrounds */
+    --card-foreground: 210 10% 98%;   /* #fafafa - card text */
+    --popover: 210 11% 15%;           /* #262626 - popover backgrounds */
+    --popover-foreground: 210 10% 98%; /* #fafafa - popover text */
+    
+    /* MidJourney Orange/Red Primary */
+    --primary: 15 100% 60%;           /* #ff6b35 - MidJourney primary orange */
+    --primary-foreground: 0 0% 100%;  /* #ffffff - white text on primary */
+    
+    /* Secondary Colors */
+    --secondary: 210 11% 17%;         /* #2a2a2a - sidebar, secondary backgrounds */
+    --secondary-foreground: 210 10% 90%; /* #e5e5e5 - secondary text */
+    
+    /* Muted Colors */
+    --muted: 210 11% 20%;             /* #333333 - muted backgrounds */
+    --muted-foreground: 210 10% 65%;  /* #a6a6a6 - muted text */
+    
+    /* Accent Colors - Gold for mining theme */
+    --accent: 45 100% 60%;            /* #ffcc00 - gold accent */
+    --accent-foreground: 210 11% 10%; /* #1a1a1a - dark text on accent */
+    
+    /* Status Colors */
+    --destructive: 0 65% 55%;         /* #dc2626 - red for errors */
+    --destructive-foreground: 0 0% 100%; /* #ffffff - white text on destructive */
+    
+    /* Border and Input Colors */
+    --border: 210 11% 25%;            /* #404040 - subtle borders */
+    --input: 210 11% 25%;             /* #404040 - input borders */
+    --ring: 15 100% 60%;              /* #ff6b35 - focus rings */
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* MidJourney-inspired component styles */
+  
+  /* Base component reset */
+  .mj-reset {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Container and layout */
+  .mj-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  
+  .mj-main-layout {
+    min-height: 100vh;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+  
+  .mj-sidebar {
+    width: 240px;
+    background-color: hsl(var(--secondary));
+    border-right: 1px solid hsl(var(--border));
+    flex-shrink: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  
+  .mj-main-content {
+    padding: 1.5rem;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Button Styles - MidJourney inspired */
+  .mj-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+    padding: 0.625rem 1.25rem;
+    height: 2.5rem;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  
+  .mj-btn:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  
+  .mj-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  /* Primary Button - MidJourney Orange */
+  .mj-btn-primary {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .mj-btn-primary:hover:not(:disabled) {
+    background-color: hsl(var(--primary) / 0.9);
+    transform: translateY(-1px);
+  }
+  
+  /* Secondary Button */
+  .mj-btn-secondary {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+  
+  .mj-btn-secondary:hover:not(:disabled) {
+    background-color: hsl(var(--muted) / 0.8);
+  }
+  
+  /* Outline Button */
+  .mj-btn-outline {
+    border: 1px solid hsl(var(--border));
+    background-color: transparent;
+    color: hsl(var(--foreground));
+  }
+  
+  .mj-btn-outline:hover:not(:disabled) {
+    background-color: hsl(var(--muted));
+  }
+  
+  /* Ghost Button */
+  .mj-btn-ghost {
+    background-color: transparent;
+    color: hsl(var(--foreground));
+  }
+  
+  .mj-btn-ghost:hover:not(:disabled) {
+    background-color: hsl(var(--muted));
+  }
+
+  /* Navigation Styles */
+  .mj-nav {
+    padding: 1.5rem 1rem;
+  }
+  
+  .mj-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .mj-nav-item:hover {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+  
+  .mj-nav-item.active {
+    background-color: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+  }
+  
+  .mj-nav-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  /* Form Styles - MidJourney inspired */
+  .mj-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .mj-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  
+  .mj-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    margin-bottom: 0.25rem;
+  }
+  
+  .mj-input {
+    height: 2.5rem;
+    width: 100%;
+    border-radius: 6px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    border: 1px solid hsl(var(--input));
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  
+  .mj-input:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+  }
+  
+  .mj-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  
+  .mj-input::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Textarea */
+  .mj-textarea {
+    min-height: 5rem;
+    resize: vertical;
+  }
+
+  /* Card Styles - MidJourney inspired */
+  .mj-card {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: all 0.15s ease-in-out;
+  }
+  
+  .mj-card-hover {
+    cursor: pointer;
+  }
+  
+  .mj-card-hover:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.25);
+  }
+  
+  .mj-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    padding: 0.5rem 0;
+  }
+
+  /* Glassmorphism effects for modern UI */
+  .glass {
+    background-color: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* Typography */
+  .mj-heading-1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: hsl(var(--foreground));
+    letter-spacing: -0.025em;
+  }
+  
+  .mj-heading-2 {
+    font-size: 1.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: hsl(var(--foreground));
+    letter-spacing: -0.015em;
+  }
+  
+  .mj-heading-3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: hsl(var(--foreground));
+  }
+  
+  .mj-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: hsl(var(--foreground));
+  }
+  
+  .mj-text-muted {
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Utility Classes */
+  .mj-flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .mj-flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .mj-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .mj-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted));
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Smooth animations */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Code syntax highlighting */
+.code-block {
+  background-color: hsl(var(--muted) / 0.5);
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+/* Loading states */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Focus styles for accessibility */
+.focus-mining:focus {
+  --tw-ring-width: 2px;
+  --tw-ring-color: #FFD700;
+  --tw-ring-offset-width: 2px;
+  --tw-ring-offset-color: hsl(var(--background));
+}
+
+/* Enhanced dashboard styles */
+.dashboard-grid {
+  display: grid;
+  gap: 2rem;
+  padding: 0;
+}
+
+.dashboard-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+  border-color: hsl(var(--primary) / 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.3);
+}
+
+.status-badge {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.status-active {
+  background-color: hsl(120 100% 25% / 0.2);
+  color: hsl(120 100% 50%);
+  border-color: hsl(120 100% 25% / 0.3);
+}
+
+.status-processing {
+  background-color: hsl(210 100% 25% / 0.2);
+  color: hsl(210 100% 60%);
+  border-color: hsl(210 100% 25% / 0.3);
+}
+
+.status-standby {
+  background-color: hsl(45 100% 25% / 0.2);
+  color: hsl(45 100% 60%);
+  border-color: hsl(45 100% 25% / 0.3);
+}
+
+/* Progress bars */
+.progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: hsl(var(--muted));
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 0.25rem;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Icon enhancements */
+.icon-accent {
+  color: hsl(var(--accent));
+}
+
+/* Improved card hover states */
+.mj-card-hover:hover {
+  border-color: hsl(var(--primary) / 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+}
+
+/* Better spacing for dashboard content */
+.dashboard-content {
+  max-width: none;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 1rem;
+  }
+  
+  .dashboard-grid {
+    gap: 1rem;
+  }
 }
