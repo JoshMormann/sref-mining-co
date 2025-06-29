@@ -2,6 +2,7 @@
 
 import { useSupabase } from '@/app/providers'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 export default function DebugPage() {
   const { supabase, user, loading } = useSupabase()
@@ -41,7 +42,9 @@ export default function DebugPage() {
 
   const testRegistration = async () => {
     try {
-      const testEmail = `test+${Date.now()}@example.com`
+      // Generate a simple, standards-compliant email (without “+” aliasing) to
+      // avoid provider-specific validation issues during testing.
+      const testEmail = `test${Date.now()}@example.com`
       const testPassword = 'testpassword123'
       const testUsername = `testuser${Date.now()}`
 
@@ -167,6 +170,15 @@ export default function DebugPage() {
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-2xl font-bold mb-6">Authentication Debug</h1>
+      {/* Quick link to User Audit tool */}
+      <div className="mb-6">
+        <Link
+          href="/debug/user-audit"
+          className="inline-block bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 transition-colors"
+        >
+          Go to User Audit Tool
+        </Link>
+      </div>
       
       <div className="space-y-6">
         {/* Current State */}

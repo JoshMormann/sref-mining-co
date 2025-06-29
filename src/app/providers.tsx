@@ -4,10 +4,12 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
+import type { User, SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/lib/types/database'
 
 type SupabaseContext = {
-  supabase: any
-  user: any | null
+  supabase: SupabaseClient<Database>
+  user: User | null
   loading: boolean
   signUp: (email: string, password: string, username: string, fullName?: string) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
@@ -18,12 +20,30 @@ type SupabaseContext = {
 const Context = createContext<SupabaseContext | undefined>(undefined)
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createClientComponentClient<Database>()
+  // ------------------------------------------------------------------
+  // Verify we actually have the Supabase env vars available.  Without
+  // these the client will be created, but all network calls will fail /
+  // hang – leading to confusing behaviour in auth flows.
+  // ------------------------------------------------------------------
+  const envReady =
+    !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   useEffect(() => {
+    // Early-out if the developer forgot to set up .env.local
+    if (!envReady) {
+      console.warn(
+        '[Supabase] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. ' +
+          'Auth operations are disabled until these are provided.'
+      )
+      setLoading(false)
+      return
+    }
+
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setUser(session?.user ?? null)
@@ -117,6 +137,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [supabase, router])
 
   const signUp = async (email: string, password: string, username: string, fullName?: string) => {
+    // Block sign-up when env missing to avoid indefinite spinner / network errors
+    if (!envReady) {
+      console.warn(
+        '[Supabase] signUp aborted – environment variables not configured.'
+      )
+      toast.error('Backend not configured – please contact support.')
+      return
+    }
+
     try {
       setLoading(true)
       

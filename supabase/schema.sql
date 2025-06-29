@@ -74,6 +74,16 @@ CREATE TABLE waitlist (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE code_votes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  code_id UUID NOT NULL REFERENCES sref_codes(id) ON DELETE CASCADE,
+  is_upvote BOOLEAN NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, code_id)
+);
+
 -- Enable Row Level Security
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE folders ENABLE ROW LEVEL SECURITY;
@@ -83,6 +93,7 @@ ALTER TABLE code_tags ENABLE ROW LEVEL SECURITY;
 ALTER TABLE folder_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE saved_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
+ALTER TABLE code_votes ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
 CREATE POLICY "Users can view their own data" ON users
@@ -167,3 +178,30 @@ CREATE POLICY "Waitlist is viewable by admins" ON waitlist
 
 CREATE POLICY "Anyone can join waitlist" ON waitlist
   FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can view their own votes" ON code_votes
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can manage their own votes" ON code_votes
+  FOR ALL USING (auth.uid() = user_id);
+
+-- RPC function to update vote counts efficiently
+CREATE OR REPLACE FUNCTION update_code_vote_counts(code_id UUID)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE sref_codes 
+  SET 
+    upvotes = (
+      SELECT COUNT(*) FROM code_votes 
+      WHERE code_votes.code_id = update_code_vote_counts.code_id 
+      AND is_upvote = true
+    ),
+    downvotes = (
+      SELECT COUNT(*) FROM code_votes 
+      WHERE code_votes.code_id = update_code_vote_counts.code_id 
+      AND is_upvote = false
+    ),
+    updated_at = NOW()
+  WHERE id = update_code_vote_counts.code_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

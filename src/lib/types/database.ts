@@ -6,8 +6,8 @@ export type Database = {
           id: string
           username: string
           email: string
-          tier: string
-          waitlist_status: string
+          tier: 'miner' | 'collector' | 'admin'
+          waitlist_status: 'none' | 'pending' | 'approved'
           created_at: string
           updated_at: string
         }
@@ -15,8 +15,8 @@ export type Database = {
           id: string
           username: string
           email: string
-          tier?: string
-          waitlist_status?: string
+          tier?: 'miner' | 'collector' | 'admin'
+          waitlist_status?: 'none' | 'pending' | 'approved'
           created_at?: string
           updated_at?: string
         }
@@ -24,8 +24,8 @@ export type Database = {
           id?: string
           username?: string
           email?: string
-          tier?: string
-          waitlist_status?: string
+          tier?: 'miner' | 'collector' | 'admin'
+          waitlist_status?: 'none' | 'pending' | 'approved'
           created_at?: string
           updated_at?: string
         }
@@ -78,7 +78,12 @@ export type Database = {
           name: string
           parent_id: string | null
           is_smart: boolean
-          search_criteria: any
+          search_criteria: {
+            tags?: string[]
+            sv_version?: number
+            upvotes_min?: number
+            date_range?: { start: string; end: string }
+          } | null
           created_at: string
           updated_at: string
         }
@@ -88,7 +93,12 @@ export type Database = {
           name: string
           parent_id?: string | null
           is_smart?: boolean
-          search_criteria?: any
+          search_criteria?: {
+            tags?: string[]
+            sv_version?: number
+            upvotes_min?: number
+            date_range?: { start: string; end: string }
+          } | null
           created_at?: string
           updated_at?: string
         }
@@ -98,7 +108,12 @@ export type Database = {
           name?: string
           parent_id?: string | null
           is_smart?: boolean
-          search_criteria?: any
+          search_criteria?: {
+            tags?: string[]
+            sv_version?: number
+            upvotes_min?: number
+            date_range?: { start: string; end: string }
+          } | null
           created_at?: string
           updated_at?: string
         }
@@ -191,7 +206,7 @@ export type Database = {
           id: string
           email: string
           user_id: string | null
-          status: string
+          status: 'pending' | 'approved' | 'rejected'
           created_at: string
           updated_at: string
         }
@@ -199,7 +214,7 @@ export type Database = {
           id?: string
           email: string
           user_id?: string | null
-          status?: string
+          status?: 'pending' | 'approved' | 'rejected'
           created_at?: string
           updated_at?: string
         }
@@ -207,7 +222,33 @@ export type Database = {
           id?: string
           email?: string
           user_id?: string | null
-          status?: string
+          status?: 'pending' | 'approved' | 'rejected'
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      code_votes: {
+        Row: {
+          id: string
+          user_id: string
+          code_id: string
+          is_upvote: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          code_id: string
+          is_upvote: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          code_id?: string
+          is_upvote?: boolean
           created_at?: string
           updated_at?: string
         }

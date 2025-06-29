@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { useSupabase } from '@/app/providers'
 import { cn } from '@/lib/utils'
 import { toast } from 'react-hot-toast'
+import { useVoting } from '@/lib/hooks/useVoting'
+import { copyCodeSchema } from '@/lib/validation/votes'
 
 type SrefCodeCardProps = {
   code: {
@@ -36,10 +38,16 @@ type SrefCodeCardProps = {
 export default function SrefCodeCard({ code, showActions = true }: SrefCodeCardProps) {
   const { supabase, user } = useSupabase()
   const [copyCount, setCopyCount] = useState(code.copy_count || 0)
-  const [upvotes, setUpvotes] = useState(code.upvotes || 0)
-  const [downvotes, setDownvotes] = useState(code.downvotes || 0)
   const [copied, setCopied] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  
+  // Use the secure voting hook
+  const { upvotes, downvotes, userVote, isVoting, handleVote } = useVoting(
+    code.id,
+    code.upvotes || 0,
+    code.downvotes || 0,
+    code.user_id
+  )
   
   // Get the first image for the card preview
   const previewImage = code.code_images && code.code_images.length > 0
@@ -47,6 +55,13 @@ export default function SrefCodeCard({ code, showActions = true }: SrefCodeCardP
     : '/images/placeholder.jpg'
   
   const handleCopy = async () => {
+    // Validate the copy request
+    const validation = copyCodeSchema.safeParse({ code_id: code.id })
+    if (!validation.success) {
+      toast.error('Invalid code')
+      return
+    }
+
     // Format the code with SV version
     const formattedCode = `--sref ${code.code_value} --sv ${code.sv_version}`
     
@@ -56,11 +71,16 @@ export default function SrefCodeCard({ code, showActions = true }: SrefCodeCardP
       setCopyCount(prev => prev + 1)
       toast.success('SREF code copied to clipboard!')
       
-      // Update copy count in database
-      await supabase
+      // Update copy count in database with proper error handling
+      const { error } = await supabase
         .from('sref_codes')
         .update({ copy_count: copyCount + 1 })
         .eq('id', code.id)
+      
+      if (error) {
+        console.error('Failed to update copy count:', error)
+        // Don't revert the copy since it was successful
+      }
       
       // Reset copied state after 2 seconds
       setTimeout(() => setCopied(false), 2000)
@@ -70,38 +90,7 @@ export default function SrefCodeCard({ code, showActions = true }: SrefCodeCardP
     }
   }
   
-  const handleVote = async (isUpvote: boolean) => {
-    if (!user) {
-      toast.error('Please sign in to vote')
-      return
-    }
-
-    if (user.id === code.user_id) {
-      toast.error("You can't vote on your own codes")
-      return
-    }
-    
-    try {
-      if (isUpvote) {
-        setUpvotes(prev => prev + 1)
-        await supabase
-          .from('sref_codes')
-          .update({ upvotes: upvotes + 1 })
-          .eq('id', code.id)
-        toast.success('Code upvoted!')
-      } else {
-        setDownvotes(prev => prev + 1)
-        await supabase
-          .from('sref_codes')
-          .update({ downvotes: downvotes + 1 })
-          .eq('id', code.id)
-        toast.success('Code downvoted!')
-      }
-    } catch (err) {
-      console.error('Failed to vote:', err)
-      toast.error('Failed to vote on code')
-    }
-  }
+  // Voting is now handled by the useVoting hook
   
   const handleSaveToLibrary = async () => {
     if (!user) {
@@ -198,7 +187,13 @@ export default function SrefCodeCard({ code, showActions = true }: SrefCodeCardP
               
               <button
                 onClick={() => handleVote(true)}
-                className="flex items-center space-x-1 text-sm text-gray-400 hover:text-white rounded-md px-2 py-1"
+                disabled={isVoting || Boolean(user && user.id === code.user_id)}
+                className={cn(
+                  "flex items-center space-x-1 text-sm rounded-md px-2 py-1 transition-colors",
+                  userVote === 'upvote' ? "text-green-400" : "text-gray-400 hover:text-white",
+                  (isVoting || (user && user.id === code.user_id)) && "opacity-50 cursor-not-allowed"
+                )}
+                title={user && user.id === code.user_id ? "You can't vote on your own codes" : "Upvote this code"}
               >
                 <FaThumbsUp />
                 <span>{upvotes}</span>
@@ -206,7 +201,13 @@ export default function SrefCodeCard({ code, showActions = true }: SrefCodeCardP
               
               <button
                 onClick={() => handleVote(false)}
-                className="flex items-center space-x-1 text-sm text-gray-400 hover:text-white rounded-md px-2 py-1"
+                disabled={isVoting || Boolean(user && user.id === code.user_id)}
+                className={cn(
+                  "flex items-center space-x-1 text-sm rounded-md px-2 py-1 transition-colors",
+                  userVote === 'downvote' ? "text-red-400" : "text-gray-400 hover:text-white",
+                  (isVoting || (user && user.id === code.user_id)) && "opacity-50 cursor-not-allowed"
+                )}
+                title={user && user.id === code.user_id ? "You can't vote on your own codes" : "Downvote this code"}
               >
                 <FaThumbsDown />
                 <span>{downvotes}</span>
